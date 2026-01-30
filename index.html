@@ -1,146 +1,306 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <title>TEXBOY 64 - Perfect Fit Edition</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+  <meta charset="UTF-8" />
+  <title>TEXBOY 64 - Perfect Fit Edition</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
 
-        body { margin: 0; background: #88aabb; overflow: hidden; font-family: 'Roboto Mono', monospace; }
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+    /* Fonte gordinha estilo Mario/Banjo */
+    @import url('https://fonts.googleapis.com/css2?family=Sigmar+One&display=swap');
 
-        canvas {
-            display: block;
-            image-rendering: pixelated;
-            image-rendering: -moz-crisp-edges;
-        }
+    body { margin: 0; background: #88aabb; overflow: hidden; font-family: 'Roboto Mono', monospace; }
+    canvas {
+      display: block;
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+    }
 
-        #crt-overlay {
-            position: fixed; inset: 0; pointer-events: none; z-index: 100;
-            background: radial-gradient(circle, rgba(0,0,0,0) 50%, rgba(10, 20, 30, 0.45) 100%);
-        }
-        #grain-overlay {
-            position: fixed; inset: 0; pointer-events: none; z-index: 90;
-            opacity: 0.05;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-        }
+    /* VIGNETTE & GRAIN */
+    #crt-overlay {
+      position: fixed; inset: 0; pointer-events: none; z-index: 100;
+      background: radial-gradient(circle, rgba(0,0,0,0) 50%, rgba(10, 20, 30, 0.45) 100%);
+    }
+    #grain-overlay {
+      position: fixed; inset: 0; pointer-events: none; z-index: 90;
+      opacity: 0.05;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
 
-        /* UI ADJUSTMENTS */
-        #config-modal {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%) scale(0.9);
-            width: 90%; max-width: 450px;
-            background: #121620;
-            border: 4px solid #557799; padding: 20px;
-            color: #fff; z-index: 2000;
-            opacity: 0; pointer-events: none; box-shadow: 0px 10px 40px rgba(0,0,0,0.8);
-            display: flex; flex-direction: column;
-            border-radius: 12px;
-        }
-        @media (min-width: 768px) {
-            #config-modal { padding: 25px; width: 450px; transform: translate(-50%, -50%) scale(1); border-radius: 0; }
-        }
+    /* INTRO SCREEN - N64 STYLE */
+    #intro-screen{
+      position: fixed; inset: 0; z-index: 7000;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(10, 18, 26, 0.85); /* Mais escuro para destacar o logo colorido */
+      backdrop-filter: blur(4px);
+      opacity: 1;
+    }
+    
+    .intro-box{
+      /* Removida a caixa sólida, agora é tudo flutuante estilo menu de jogo */
+      width: 100%;
+      text-align: center;
+      display: flex; flex-direction: column; align-items: center;
+    }
 
-        #ui-bar {
-            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
-            display: flex; align-items: center; gap: 15px;
-            z-index: 1000; width: 90%; justify-content: center;
-            max-width: 600px;
-        }
+    /* LOGO 3D ESTILO MARIO 64 */
+    .n64-logo {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+        filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.5));
+        transform: rotate(-3deg) scale(1.2);
+    }
+    
+    .letter {
+        font-family: 'Sigmar One', cursive;
+        font-size: 60px;
+        line-height: 1;
+        padding: 0 2px;
+        position: relative;
+        text-transform: uppercase;
+        /* Borda grossa preta em volta da letra (stroke fake) */
+        -webkit-text-stroke: 2px #000;
+        
+        /* Efeito 3D nas letras via shadow */
+        text-shadow: 
+            0px 2px 0px #b8b8b8,
+            0px 4px 0px #9e9e9e,
+            0px 6px 0px #808080,
+            0px 8px 0px #000;
+    }
 
-        .btn-main {
-            padding: 22px 20px; font-size: 18px; cursor: pointer;
-            flex: 1;
-            background: #ffffff; color: #333; border: 4px solid #557799;
-            font-weight: 900; text-transform: uppercase; box-shadow: 6px 6px 0px #334455;
-            white-space: nowrap; text-align: center; border-radius: 8px;
-        }
-        @media (min-width: 768px) {
-            .btn-main { padding: 18px 20px; font-size: 16px; border-radius: 0; box-shadow: 8px 8px 0px #334455; }
-        }
+    /* Cores alternadas clássicas (Vermelho, Verde, Azul, Amarelo) */
+    .c1 { color: #ff3333; transform: translateY(0px) rotate(-5deg); z-index: 10; }
+    .c2 { color: #33cc33; transform: translateY(-10px) rotate(2deg); z-index: 9; }
+    .c3 { color: #3366ff; transform: translateY(-15px) rotate(-3deg); z-index: 8; }
+    .c4 { color: #ffcc00; transform: translateY(-5px) rotate(4deg); z-index: 7; }
+    .c5 { color: #ff3333; transform: translateY(0px) rotate(-2deg); z-index: 6; margin-left: 10px; } /* Espaço pro 64 */
+    .c6 { color: #33cc33; transform: translateY(-8px) rotate(3deg); z-index: 5; }
 
-        .btn-main:active, .btn-confirm:active { transform: translate(4px, 4px); box-shadow: 2px 2px 0px #334455; }
+    /* "64" metálico/diferente */
+    .num {
+        font-family: 'Sigmar One', cursive;
+        font-size: 50px;
+        color: #ddd; /* Prata/Metálico */
+        -webkit-text-stroke: 2px #333;
+        transform: translateY(10px) rotate(-5deg);
+        margin-left: 5px;
+        text-shadow: 
+            2px 2px 0px #999,
+            4px 4px 0px #666,
+            6px 6px 0px #333;
+    }
 
-        .btn-gear {
-            width: 75px; height: 75px; min-width: 75px;
-            display: flex; align-items: center; justify-content: center;
-            background: #cbd5e1; border: 4px solid #557799; cursor: pointer; box-shadow: 6px 6px 0px #334455;
-            border-radius: 8px;
-        }
-        @media (min-width: 768px) {
-            .btn-gear { width: 65px; height: 65px; min-width: 65px; border-radius: 0; box-shadow: 8px 8px 0px #334455; }
-        }
+    .intro-sub{
+      font-family: 'VT323', monospace;
+      color: #ffcc00;
+      font-size: 28px;
+      margin-top: 20px;
+      margin-bottom: 30px;
+      letter-spacing: 2px;
+      text-shadow: 2px 2px 0px #000;
+      animation: blink 0.8s infinite alternate;
+    }
 
-        .pixel-gear { width: 32px; height: 32px; background: #334455; position: relative; }
-        .pixel-gear::before, .pixel-gear::after { content: ''; position: absolute; inset: 0; background: inherit; transform: rotate(45deg); }
-        .pixel-gear-inner { position: absolute; inset: 10px; background: #cbd5e1; z-index: 10; }
+    @keyframes blink { from { opacity: 1; } to { opacity: 0.3; } }
 
-        .btn-confirm {
-            margin-top: 20px; width: 100%; padding: 18px;
-            background: #4ade80; color: #064e3b; border: 3px solid #064e3b;
-            font-weight: 900; text-transform: uppercase; cursor: pointer;
-            box-shadow: 4px 4px 0px #065f46; font-family: 'Roboto Mono', monospace;
-            font-size: 18px; border-radius: 6px;
-        }
-        @media (min-width: 768px) {
-            .btn-confirm { padding: 15px; font-size: 16px; border-radius: 0; box-shadow: 6px 6px 0px #065f46; }
-        }
+    .intro-btn{
+      width: min(280px, 80%);
+      padding: 15px 16px;
+      margin-top: 15px;
+      border: 4px solid #fff;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      font-family: 'Sigmar One', cursive; /* Fonte do jogo */
+      font-size: 20px;
+      text-transform: uppercase;
+      box-shadow: 4px 4px 0px rgba(0,0,0,0.5);
+      cursor: pointer;
+      border-radius: 30px; /* Redondo estilo Mario */
+      transition: transform 0.1s;
+    }
+    
+    .intro-btn:hover {
+        background: rgba(255,255,255,0.2);
+        transform: scale(1.05);
+    }
+    .intro-btn:active { transform: scale(0.95); }
 
-        input, textarea, select {
-            background: #000; border: 2px solid #445566; color: #0f0;
-            width: 100%; padding: 12px; margin-bottom: 15px;
-            font-size: 16px; border-radius: 4px;
-        }
-        label { font-size: 14px; color: #88aabb; font-weight: bold; margin-bottom: 8px; display: block; }
-    </style>
+    .intro-btn-primary{
+      background: #ffcc00;
+      color: #333;
+      border-color: #333;
+      text-shadow: none;
+    }
+    .intro-btn-primary:hover {
+        background: #ffe066;
+    }
+
+    /* UI ADJUSTMENTS - MOBILE FIRST */
+    #config-modal {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      width: 90%; max-width: 450px;
+      background: #121620;
+      border: 4px solid #557799; padding: 20px;
+      color: #fff;
+      z-index: 8000; 
+      opacity: 0; pointer-events: none;
+      box-shadow: 0px 10px 40px rgba(0,0,0,0.8);
+      display: flex; flex-direction: column;
+      border-radius: 12px;
+    }
+    @media (min-width: 768px) {
+      #config-modal { padding: 25px; width: 450px; transform: translate(-50%, -50%) scale(1); border-radius: 0; }
+    }
+
+    #ui-bar {
+      position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 15px;
+      z-index: 5000; width: 90%; justify-content: center;
+      max-width: 600px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .btn-main {
+      padding: 22px 20px; font-size: 18px; cursor: pointer;
+      flex: 1;
+      background: #ffffff; color: #333; border: 4px solid #557799;
+      font-weight: 900; text-transform: uppercase; box-shadow: 6px 6px 0px #334455;
+      white-space: nowrap; text-align: center;
+      border-radius: 8px;
+    }
+    @media (min-width: 768px) {
+      .btn-main { padding: 18px 20px; font-size: 16px; border-radius: 0; box-shadow: 8px 8px 0px #334455; }
+    }
+
+    .btn-main:active, .btn-confirm:active { transform: translate(4px, 4px); box-shadow: 2px 2px 0px #334455; }
+
+    .btn-gear {
+      width: 75px; height: 75px; min-width: 75px;
+      display: flex; align-items: center; justify-content: center;
+      background: #cbd5e1; border: 4px solid #557799; cursor: pointer;
+      box-shadow: 6px 6px 0px #334455;
+      border-radius: 8px;
+    }
+    @media (min-width: 768px) {
+      .btn-gear { width: 65px; height: 65px; min-width: 65px; border-radius: 0; box-shadow: 8px 8px 0px #334455; }
+    }
+
+    .pixel-gear { width: 32px; height: 32px; background: #334455; position: relative; }
+    .pixel-gear::before, .pixel-gear::after { content: ''; position: absolute; inset: 0; background: inherit; transform: rotate(45deg); }
+    .pixel-gear-inner { position: absolute; inset: 10px; background: #cbd5e1; z-index: 10; }
+
+    .btn-confirm {
+      margin-top: 20px; width: 100%; padding: 18px;
+      background: #4ade80; color: #064e3b; border: 3px solid #064e3b;
+      font-weight: 900; text-transform: uppercase; cursor: pointer;
+      box-shadow: 4px 4px 0px #065f46; font-family: 'Roboto Mono', monospace;
+      font-size: 18px; border-radius: 6px;
+    }
+    @media (min-width: 768px) {
+      .btn-confirm { padding: 15px; font-size: 16px; border-radius: 0; box-shadow: 6px 6px 0px #065f46; }
+    }
+
+    input, textarea, select {
+      background: #000; border: 2px solid #445566; color: #0f0;
+      width: 100%; padding: 12px; margin-bottom: 15px;
+      font-size: 16px; border-radius: 4px;
+    }
+    label { font-size: 14px; color: #88aabb; font-weight: bold; margin-bottom: 8px; display: block; }
+  </style>
 </head>
+
 <body>
+  <div id="crt-overlay"></div>
+  <div id="grain-overlay"></div>
 
-<div id="crt-overlay"></div>
-<div id="grain-overlay"></div>
-
-<div id="config-modal">
-    <div class="flex justify-between items-center mb-6 border-b-2 border-gray-700 pb-2">
-        <h2 class="text-lg font-bold text-blue-400 uppercase">Texboy_64 // Setup</h2>
+  <!-- INTRO / MENU (N64 STYLE) -->
+  <div id="intro-screen">
+    <div class="intro-box" id="intro-box">
+        <!-- Letreiro "RIFA 64" estilo Mario 64 -->
+        <div class="n64-logo">
+            <span class="letter c1">R</span>
+            <span class="letter c2">I</span>
+            <span class="letter c3">F</span>
+            <span class="letter c4">A</span>
+            <span class="num">64</span>
+        </div>
+        
+      <div class="intro-sub">PRESS START TO PLAY</div>
+      
+      <button id="btn-start" class="intro-btn intro-btn-primary">START GAME</button>
+      <button id="btn-options" class="intro-btn">OPTIONS</button>
     </div>
+  </div>
+
+  <!-- CONFIG MODAL -->
+  <div id="config-modal">
+    <div class="flex justify-between items-center mb-6 border-b-2 border-gray-700 pb-2">
+      <h2 class="text-lg font-bold text-blue-400 uppercase">Texboy_64 // Setup</h2>
+    </div>
+
     <label>Prêmio:</label>
     <input type="text" id="input-premio" value="Cesta Especial" oninput="updateRaffle()">
+
     <label>Nomes:</label>
     <textarea id="input-nomes" rows="5" oninput="processNames()">Rosemeire, Denise, Roseli, Silvana, Clarice, Mônica, Rosângela, Cleuza, Mirtes, Margarida, Zulmira, Raquel, Norma, Noêmia, Antônia, Alessandra, Salete, Marlene, Rosana, Elizabeth</textarea>
+
     <div class="flex gap-4">
-        <div class="w-1/2">
-            <label>Sorteio:</label>
-            <select id="select-mode" onchange="toggleManualMode()">
-                <option value="random">RANDOM</option>
-                <option value="manual">INJECT</option>
-            </select>
-        </div>
-        <div id="manual-winner-area" class="w-1/2 hidden">
-            <label class="text-yellow-500">Alvo:</label>
-            <select id="select-winner" onchange="updateRaffle()"></select>
-        </div>
+      <div class="w-1/2">
+        <label>Sorteio:</label>
+        <select id="select-mode" onchange="toggleManualMode()">
+          <option value="random">RANDOM</option>
+          <option value="manual">INJECT</option>
+        </select>
+      </div>
+      <div id="manual-winner-area" class="w-1/2 hidden">
+        <label class="text-yellow-500">Alvo:</label>
+        <select id="select-winner" onchange="updateRaffle()"></select>
+      </div>
     </div>
+
     <button onclick="toggleModal()" class="btn-confirm">SALVAR & FECHAR</button>
-</div>
+  </div>
 
-<div id="ui-bar">
-    <button onclick="toggleFlap()" id="btn-action" class="btn-main">Revelar Resultado</button>
-    <button onclick="toggleModal()" class="btn-gear"><div class="pixel-gear" id="gear-icon"><div class="pixel-gear-inner"></div></div></button>
-</div>
+  <!-- UI BAR -->
+  <div id="ui-bar">
+    <button onclick="toggleFlap()" id="btn-action" class="btn-main">Abrir Rifa</button>
+    <button onclick="toggleModal()" class="btn-gear">
+      <div class="pixel-gear" id="gear-icon"><div class="pixel-gear-inner"></div></div>
+    </button>
+  </div>
 
-<script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
-<script type="importmap">
-    { "imports": { "three": "https://unpkg.com/three@0.150.1/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.150.1/examples/jsm/" } }
-</script>
+  <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.150.1/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.150.1/examples/jsm/"
+      }
+    }
+  </script>
 
-<script type="module">
+  <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-    let state = { names: [], winner: "", prize: "", isOpen: false, isAnimating: false, isModalOpen: false };
+    let state = {
+      names: [],
+      winner: "",
+      prize: "",
+      isOpen: false,
+      isAnimating: false,
+      isModalOpen: false,
+      hasStarted: false
+    };
+
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x88aabb);
 
@@ -149,192 +309,366 @@
 
     const renderer = new THREE.WebGLRenderer({ antialias: false });
     renderer.setSize(window.innerWidth, window.innerHeight);
+
     const isMobile = window.innerWidth < 768;
     renderer.setPixelRatio(isMobile ? 0.7 : 0.5);
+
     document.body.appendChild(renderer.domElement);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
+
     scene.add(new THREE.AmbientLight(0xffffff, 1.4));
 
+    // --- TEXTURE BUFFERS ---
     const fCanv = document.createElement('canvas'); fCanv.width = 1024; fCanv.height = 2048;
     const bCanv = document.createElement('canvas'); bCanv.width = 1024; bCanv.height = 2048;
     const ffCanv = document.createElement('canvas'); ffCanv.width = 1024; ffCanv.height = 400;
     const fbCanv = document.createElement('canvas'); fbCanv.width = 1024; fbCanv.height = 400;
 
-    const fTex = new THREE.CanvasTexture(fCanv); const bTex = new THREE.CanvasTexture(bCanv);
-    const ffTex = new THREE.CanvasTexture(ffCanv); const fbTex = new THREE.CanvasTexture(fbCanv);
+    const fTex = new THREE.CanvasTexture(fCanv);
+    const bTex = new THREE.CanvasTexture(bCanv);
+    const ffTex = new THREE.CanvasTexture(ffCanv);
+    const fbTex = new THREE.CanvasTexture(fbCanv);
+
     [fTex, bTex, ffTex, fbTex].forEach(t => t.magFilter = t.minFilter = THREE.NearestFilter);
 
     function drawPaperBase(ctx, w, h, isBack = false) {
-        ctx.fillStyle = isBack ? '#f0ebe4' : '#ffffff'; ctx.fillRect(0,0,w,h);
-        ctx.globalAlpha = 0.08;
-        for(let i=0; i<6000; i++) {
-            ctx.fillStyle = Math.random() > 0.5 ? '#000' : '#fff';
-            ctx.fillRect(Math.random()*w, Math.random()*h, 2, 2);
-        }
-        ctx.globalAlpha = 1.0;
+      ctx.fillStyle = isBack ? '#f0ebe4' : '#ffffff';
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.globalAlpha = 0.08;
+      for (let i = 0; i < 6000; i++) {
+        ctx.fillStyle = Math.random() > 0.5 ? '#000' : '#fff';
+        ctx.fillRect(Math.random() * w, Math.random() * h, 2, 2);
+      }
+      ctx.globalAlpha = 1.0;
     }
 
-    window.updateRaffleTextures = function() {
-        const fctx = fCanv.getContext('2d'); drawPaperBase(fctx, 1024, 2048);
-        let fGrad = fctx.createLinearGradient(0,0,0,320);
-        fGrad.addColorStop(0, 'rgba(0,0,0,0.9)'); fGrad.addColorStop(1, 'rgba(0,0,0,0)');
-        fctx.fillStyle = fGrad; fctx.fillRect(0,0,1024,320);
+    window.updateRaffleTextures = function () {
+      const fctx = fCanv.getContext('2d');
+      drawPaperBase(fctx, 1024, 2048);
 
-        fctx.textAlign = 'center'; fctx.fillStyle = '#ff0000';
-        fctx.font = 'bold 130px Arial Black';
-        fctx.fillText(state.winner.toUpperCase(), 512, 130);
+      let fGrad = fctx.createLinearGradient(0, 0, 0, 320);
+      fGrad.addColorStop(0, 'rgba(0,0,0,0.9)');
+      fGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      fctx.fillStyle = fGrad;
+      fctx.fillRect(0, 0, 1024, 320);
 
-        fctx.fillStyle = '#333'; fctx.font = 'bold 180px Impact'; fctx.fillText('CARTELA', 512, 450);
-        fctx.font = 'bold 90px Impact'; fctx.fillText(`COM ${state.names.length} NOMES`, 512, 580);
+      // Winner
+      fctx.textAlign = 'center';
+      fctx.fillStyle = '#ff0000';
+      fctx.font = 'bold 130px Arial Black';
+      fctx.fillText(state.winner.toUpperCase(), 512, 130);
 
-        fctx.textAlign = 'left'; fctx.strokeStyle = '#000'; fctx.lineWidth = 10; fctx.font = 'bold 65px Arial';
-        fctx.fillText(`PRÊMIO: ${state.prize.toUpperCase()}`, 80, 750);
-        fctx.beginPath(); fctx.moveTo(380,750); fctx.lineTo(940,750); fctx.stroke();
+      // Titles
+      fctx.fillStyle = '#333';
+      fctx.font = 'bold 180px Impact';
+      fctx.fillText('CARTELA', 512, 450);
 
-        fctx.strokeStyle = '#000'; fctx.lineWidth = 6;
-        fctx.textAlign = 'center';
+      fctx.font = 'bold 90px Impact';
+      fctx.fillText(`COM ${state.names.length} NOMES`, 512, 580);
 
-        state.names.forEach((n, i) => {
-            let col = i % 5; let row = Math.floor(i / 5);
-            let x = 80 + col*172; let y = 920 + row*105;
+      // Prize line
+      fctx.textAlign = 'left';
+      fctx.strokeStyle = '#000';
+      fctx.lineWidth = 10;
+      fctx.font = 'bold 65px Arial';
+      fctx.fillText(`PRÊMIO: ${state.prize.toUpperCase()}`, 80, 750);
+      fctx.beginPath();
+      fctx.moveTo(380, 750);
+      fctx.lineTo(940, 750);
+      fctx.stroke();
 
-            if(y < 1950) {
-                fctx.strokeRect(x,y,172,105);
+      // Grid + names (V14 - measureText safe fit)
+      fctx.strokeStyle = '#000';
+      fctx.lineWidth = 6;
+      fctx.textAlign = 'center';
 
-                fctx.save();
-                fctx.translate(x+86, y+65);
+      const CELL_W = 172;
+      const CELL_H = 105;
+      const CELL_PAD = 12;
+      const MAX_WIDTH = CELL_W - (CELL_PAD * 2);
 
-                // LÓGICA V14: Medição Real de Largura
-                // Largura máxima permitida dentro da célula (172px - margem de 12px)
-                const MAX_WIDTH = 150;
+      state.names.forEach((n, i) => {
+        let col = i % 5;
+        let row = Math.floor(i / 5);
+        let x = 80 + col * CELL_W;
+        let y = 920 + row * CELL_H;
 
-                // Primeiro setamos a fonte padrão
-                let fontSize = 32;
-                fctx.font = `900 ${fontSize}px "Arial Black", "Roboto Mono", monospace`;
+        if (y < 1950) {
+          fctx.strokeRect(x, y, CELL_W, CELL_H);
 
-                // Medimos quanto o texto ocupa com essa fonte
-                let width = fctx.measureText(n.toUpperCase()).width;
+          const txt = n.toUpperCase();
 
-                // Se o texto for maior que o espaço, calculamos o fator de compressão exato
-                let scaleX = 1.0;
-                if (width > MAX_WIDTH) {
-                    scaleX = MAX_WIDTH / width;
-                    // Se a compressão for muito extrema (texto muito espremido), reduzimos também a fonte
-                    if (scaleX < 0.6) {
-                        fontSize = 24;
-                        fctx.font = `900 ${fontSize}px "Arial Black", "Roboto Mono", monospace`;
-                        width = fctx.measureText(n.toUpperCase()).width;
-                        scaleX = MAX_WIDTH / width; // Recalcula com nova fonte
-                    }
-                }
+          fctx.save();
+          fctx.translate(x + CELL_W / 2, y + 65);
 
-                fctx.scale(scaleX, 1.0);
-                fctx.fillStyle = '#000';
-                fctx.fillText(n.toUpperCase(), 0, 0);
-                fctx.restore();
+          let fontSize = 32;
+          fctx.font = `900 ${fontSize}px "Arial Black", "Roboto Mono", monospace`;
+          let width = fctx.measureText(txt).width;
+
+          let scaleX = 1.0;
+          if (width > MAX_WIDTH) {
+            scaleX = MAX_WIDTH / width;
+
+            if (scaleX < 0.6) {
+              fontSize = 24;
+              fctx.font = `900 ${fontSize}px "Arial Black", "Roboto Mono", monospace`;
+              width = fctx.measureText(txt).width;
+              scaleX = MAX_WIDTH / width;
             }
-        });
+          }
 
-        const bctx = bCanv.getContext('2d'); drawPaperBase(bctx, 1024, 2048, true);
-        bctx.save(); bctx.translate(1024, 0); bctx.scale(-1, 1); bctx.globalAlpha = 0.3;
-        bctx.fillStyle = '#2c3e50'; bctx.font = 'bold 180px Impact'; bctx.fillText('CARTELA', 512, 450);
-        state.names.forEach((n, i) => {
-            let col = i % 5; let row = Math.floor(i / 5);
-            let x = 80 + col*172; let y = 920 + row*105;
-            if(y < 1950) bctx.strokeRect(x,y,172,105);
-        });
-        bctx.restore();
-        bctx.textAlign = 'right'; bctx.fillStyle = 'rgba(200,30,30,0.85)'; bctx.font = 'bold 70px Courier New'; bctx.fillText('№ 000'+state.names.length+'-A', 950, 130);
-        bctx.textAlign = 'left'; bctx.fillStyle = '#666'; bctx.font = 'bold 22px Arial'; bctx.fillText('REGULAMENTO TEXBOY_OS:', 60, 1600);
-        bctx.fillStyle = '#999'; for(let i=0; i<6; i++) bctx.fillRect(60, 1640 + (i*20), 900 - (Math.random()*150), 6);
-        bctx.fillStyle = '#000'; for(let i=0; i<40; i++) bctx.fillRect(280 + (i*14), 1800, Math.random()*12+4, 110);
-        bctx.textAlign = 'center'; bctx.fillStyle = '#2c3e50'; bctx.font = '900 110px Impact'; bctx.fillText('TEXBOY', 512, 2010);
+          fctx.scale(scaleX, 1.0);
+          fctx.fillStyle = '#000';
+          fctx.fillText(txt, 0, 0);
+          fctx.restore();
+        }
+      });
 
-        const ffctx = ffCanv.getContext('2d'); drawPaperBase(ffctx, 1024, 400);
-        ffctx.fillStyle = '#111'; ffctx.fillRect(200,0,624,400);
-        let ffG = ffctx.createLinearGradient(0,250,0,400); ffG.addColorStop(0,'transparent'); ffG.addColorStop(1,'rgba(0,0,0,0.75)');
-        ffctx.fillStyle = ffG; ffctx.fillRect(0,250,1024,150);
-        const fbctx = fbCanv.getContext('2d'); drawPaperBase(fbctx, 1024, 400, true);
-        let fbG = fbctx.createLinearGradient(0,0,0,250); fbG.addColorStop(0,'rgba(0,0,0,0.9)'); fbG.addColorStop(1,'transparent');
-        fbctx.fillStyle = fbG; fbctx.fillRect(0,0,1024,250);
+      // Back texture
+      const bctx = bCanv.getContext('2d');
+      drawPaperBase(bctx, 1024, 2048, true);
 
-        [fTex, bTex, ffTex, fbTex].forEach(t => t.needsUpdate = true);
-    }
+      bctx.save();
+      bctx.translate(1024, 0);
+      bctx.scale(-1, 1);
+      bctx.globalAlpha = 0.3;
 
-    const chromeC = document.createElement('canvas'); chromeC.width = 128; chromeC.height = 128;
+      bctx.fillStyle = '#2c3e50';
+      bctx.font = 'bold 180px Impact';
+      bctx.fillText('CARTELA', 512, 450);
+
+      state.names.forEach((n, i) => {
+        let col = i % 5;
+        let row = Math.floor(i / 5);
+        let x = 80 + col * CELL_W;
+        let y = 920 + row * CELL_H;
+        if (y < 1950) bctx.strokeRect(x, y, CELL_W, CELL_H);
+      });
+
+      bctx.restore();
+
+      bctx.textAlign = 'right';
+      bctx.fillStyle = 'rgba(200,30,30,0.85)';
+      bctx.font = 'bold 70px Courier New';
+      bctx.fillText('№ 000' + state.names.length + '-A', 950, 130);
+
+      bctx.textAlign = 'left';
+      bctx.fillStyle = '#666';
+      bctx.font = 'bold 22px Arial';
+      bctx.fillText('REGULAMENTO TEXBOY_OS:', 60, 1600);
+
+      bctx.fillStyle = '#999';
+      for (let i = 0; i < 6; i++) bctx.fillRect(60, 1640 + (i * 20), 900 - (Math.random() * 150), 6);
+
+      bctx.fillStyle = '#000';
+      for (let i = 0; i < 40; i++) bctx.fillRect(280 + (i * 14), 1800, Math.random() * 12 + 4, 110);
+
+      bctx.textAlign = 'center';
+      bctx.fillStyle = '#2c3e50';
+      bctx.font = '900 110px Impact';
+      bctx.fillText('TEXBOY', 512, 2010);
+
+      // Flap textures
+      const ffctx = ffCanv.getContext('2d');
+      drawPaperBase(ffctx, 1024, 400);
+
+      ffctx.fillStyle = '#111';
+      ffctx.fillRect(200, 0, 624, 400);
+
+      let ffG = ffctx.createLinearGradient(0, 250, 0, 400);
+      ffG.addColorStop(0, 'transparent');
+      ffG.addColorStop(1, 'rgba(0,0,0,0.75)');
+      ffctx.fillStyle = ffG;
+      ffctx.fillRect(0, 250, 1024, 150);
+
+      const fbctx = fbCanv.getContext('2d');
+      drawPaperBase(fbctx, 1024, 400, true);
+
+      let fbG = fbctx.createLinearGradient(0, 0, 0, 250);
+      fbG.addColorStop(0, 'rgba(0,0,0,0.9)');
+      fbG.addColorStop(1, 'transparent');
+      fbctx.fillStyle = fbG;
+      fbctx.fillRect(0, 0, 1024, 250);
+
+      [fTex, bTex, ffTex, fbTex].forEach(t => t.needsUpdate = true);
+    };
+
+    // Chrome material
+    const chromeC = document.createElement('canvas');
+    chromeC.width = 128; chromeC.height = 128;
     const cctx = chromeC.getContext('2d');
-    const cGrad = cctx.createRadialGradient(40,40,5,64,64,60);
-    cGrad.addColorStop(0,'#fff'); cGrad.addColorStop(0.3,'#aaa'); cGrad.addColorStop(1,'#111');
-    cctx.fillStyle = cGrad; cctx.fillRect(0,0,128,128);
+    const cGrad = cctx.createRadialGradient(40, 40, 5, 64, 64, 60);
+    cGrad.addColorStop(0, '#fff');
+    cGrad.addColorStop(0.3, '#aaa');
+    cGrad.addColorStop(1, '#111');
+    cctx.fillStyle = cGrad;
+    cctx.fillRect(0, 0, 128, 128);
     const chromeMat = new THREE.MeshMatcapMaterial({ matcap: new THREE.CanvasTexture(chromeC) });
 
-    const raffleGroup = new THREE.Group(); scene.add(raffleGroup);
+    // Scene objects
+    const raffleGroup = new THREE.Group();
+    scene.add(raffleGroup);
+
     const card = new THREE.Mesh(new THREE.BoxGeometry(4.0, 7.0, 0.06), [
-        new THREE.MeshStandardMaterial({color:0xdddddd}), new THREE.MeshStandardMaterial({color:0xdddddd}),
-        new THREE.MeshStandardMaterial({color:0xdddddd}), new THREE.MeshStandardMaterial({color:0xdddddd}),
-        new THREE.MeshStandardMaterial({map:fTex}), new THREE.MeshStandardMaterial({map:bTex})
+      new THREE.MeshStandardMaterial({ color: 0xdddddd }),
+      new THREE.MeshStandardMaterial({ color: 0xdddddd }),
+      new THREE.MeshStandardMaterial({ color: 0xdddddd }),
+      new THREE.MeshStandardMaterial({ color: 0xdddddd }),
+      new THREE.MeshStandardMaterial({ map: fTex }),
+      new THREE.MeshStandardMaterial({ map: bTex })
     ]);
     raffleGroup.add(card);
 
-    const flapPivot = new THREE.Group(); flapPivot.position.set(0, 3.5, 0.06); raffleGroup.add(flapPivot);
+    const flapPivot = new THREE.Group();
+    flapPivot.position.set(0, 3.5, 0.06);
+    raffleGroup.add(flapPivot);
+
     const foldMesh = new THREE.Mesh(new THREE.BoxGeometry(4.0, 0.8, 0.05), [
-        new THREE.MeshStandardMaterial({color:0xdddddd}), new THREE.MeshStandardMaterial({color:0xdddddd}),
-        new THREE.MeshStandardMaterial({color:0xdddddd}), new THREE.MeshStandardMaterial({color:0xdddddd}),
-        new THREE.MeshStandardMaterial({map:ffTex}), new THREE.MeshStandardMaterial({map:fbTex})
+      new THREE.MeshStandardMaterial({ color: 0xdddddd }),
+      new THREE.MeshStandardMaterial({ color: 0xdddddd }),
+      new THREE.MeshStandardMaterial({ color: 0xdddddd }),
+      new THREE.MeshStandardMaterial({ color: 0xdddddd }),
+      new THREE.MeshStandardMaterial({ map: ffTex }),
+      new THREE.MeshStandardMaterial({ map: fbTex })
     ]);
-    foldMesh.position.y = -0.4; flapPivot.add(foldMesh);
+    foldMesh.position.y = -0.4;
+    flapPivot.add(foldMesh);
+
     const r1 = new THREE.Mesh(new THREE.SphereGeometry(0.09, 16, 16), chromeMat);
-    r1.scale.set(1, 1, 0.4); r1.position.set(-1.25, 0, 0.04); foldMesh.add(r1);
-    const r2 = r1.clone(); r2.position.set(1.25, 0, 0.04); foldMesh.add(r2);
+    r1.scale.set(1, 1, 0.4);
+    r1.position.set(-1.25, 0, 0.04);
+    foldMesh.add(r1);
 
-    window.processNames = function() {
-        state.names = document.getElementById('input-nomes').value.split(/,|\n/).map(n => n.trim()).filter(n => n !== "");
-        const select = document.getElementById('select-winner'); select.innerHTML = "";
-        state.names.forEach(n => { let o = document.createElement('option'); o.value = n; o.text = n; select.add(o); });
-        updateRaffle();
-    }
-    window.toggleManualMode = function() {
-        document.getElementById('manual-winner-area').classList.toggle('hidden', document.getElementById('select-mode').value === 'random');
-        updateRaffle();
-    }
-    window.updateRaffle = function() {
-        state.prize = document.getElementById('input-premio').value;
-        const mode = document.getElementById('select-mode').value;
-        state.winner = mode === 'random' ? (state.names[Math.floor(Math.random() * state.names.length)] || "???") : (document.getElementById('select-winner').value || "???");
-        updateRaffleTextures();
-    }
-    window.toggleModal = function() {
-        const modal = document.getElementById('config-modal');
-        state.isModalOpen = !state.isModalOpen;
-        gsap.to(modal, { opacity: state.isModalOpen ? 1 : 0, scale: state.isModalOpen ? 1 : 0.95, pointerEvents: state.isModalOpen ? 'auto' : 'none', duration: 0.3 });
-        gsap.to("#gear-icon", { rotation: state.isModalOpen ? 90 : 0, duration: 0.4 });
+    const r2 = r1.clone();
+    r2.position.set(1.25, 0, 0.04);
+    foldMesh.add(r2);
+
+    // UI logic
+    window.processNames = function () {
+      state.names = document.getElementById('input-nomes').value
+        .split(/,|\n/)
+        .map(n => n.trim())
+        .filter(n => n !== "");
+
+      const select = document.getElementById('select-winner');
+      select.innerHTML = "";
+      state.names.forEach(n => {
+        const o = document.createElement('option');
+        o.value = n;
+        o.text = n;
+        select.add(o);
+      });
+
+      updateRaffle();
+    };
+
+    window.toggleManualMode = function () {
+      document.getElementById('manual-winner-area')
+        .classList.toggle('hidden', document.getElementById('select-mode').value === 'random');
+      updateRaffle();
+    };
+
+    window.updateRaffle = function () {
+      state.prize = document.getElementById('input-premio').value;
+      const mode = document.getElementById('select-mode').value;
+      state.winner = mode === 'random'
+        ? (state.names[Math.floor(Math.random() * state.names.length)] || "???")
+        : (document.getElementById('select-winner').value || "???");
+
+      updateRaffleTextures();
+    };
+
+    window.toggleModal = function () {
+      const modal = document.getElementById('config-modal');
+      state.isModalOpen = !state.isModalOpen;
+
+      gsap.to(modal, {
+        opacity: state.isModalOpen ? 1 : 0,
+        scale: state.isModalOpen ? 1 : 0.95,
+        pointerEvents: state.isModalOpen ? 'auto' : 'none',
+        duration: 0.28
+      });
+
+      gsap.to("#gear-icon", { rotation: state.isModalOpen ? 90 : 0, duration: 0.35 });
+    };
+
+    // ZOOM / FLAP
+    window.toggleFlap = function () {
+      if (state.isAnimating) return;
+      state.isAnimating = true;
+
+      const isPortraitMode = window.innerWidth < window.innerHeight;
+
+      let targetZ, targetY, focusY;
+      if (isPortraitMode) {
+        targetZ = 9.5;
+        targetY = 1.5;
+        focusY = 2.5;
+      } else {
+        targetZ = 4.5;
+        targetY = 3.2;
+        focusY = 3.2;
+      }
+
+      const tl = gsap.timeline({ onComplete: () => { state.isAnimating = false; } });
+
+      if (!state.isOpen) {
+        controls.enabled = false;
+        document.getElementById('btn-action').innerText = "Fechar Rifa";
+
+        tl.to(camera.position, { x: 0, y: targetY, z: targetZ, duration: 1.2, ease: "power2.inOut" }, 0);
+        tl.to(controls.target, { x: 0, y: focusY, z: 0, duration: 1.2, ease: "power2.inOut" }, 0);
+        tl.to(flapPivot.rotation, { x: -2.3, duration: 1.0, ease: "back.out(1.2)" }, 0.4);
+      } else {
+        document.getElementById('btn-action').innerText = "Abrir Rifa";
+        const returnZ = isPortraitMode ? 11.5 : 11.0;
+
+        tl.to(camera.position, { x: 0, y: 1.0, z: returnZ, duration: 1.0, ease: "power2.inOut" }, 0);
+        tl.to(controls.target, {
+          x: 0, y: 0, z: 0, duration: 1.0, ease: "power2.inOut",
+          onComplete: () => { controls.enabled = true; }
+        }, 0);
+        tl.to(flapPivot.rotation, { x: 0, duration: 0.7 }, 0);
+      }
+
+      state.isOpen = !state.isOpen;
+    };
+
+    // INTRO behavior
+    function startGame() {
+      if (state.hasStarted) return;
+      state.hasStarted = true;
+
+      const intro = document.getElementById('intro-screen');
+      const ui = document.getElementById('ui-bar');
+      
+      // Animação de saída: Zoom in no logo (estilo entrando no mundo) + fade out
+      gsap.timeline()
+        .to(".n64-logo", { scale: 5, opacity: 0, duration: 0.6, ease: "power2.in" }, 0)
+        .to("#intro-box", { opacity: 0, duration: 0.3 }, 0.1)
+        .to(intro, {
+          opacity: 0,
+          duration: 0.5,
+          ease: "power2.inOut",
+          onComplete: () => {
+            intro.style.display = "none";
+            intro.style.pointerEvents = "none";
+          }
+        }, 0.3)
+        .to(ui, { opacity: 1, duration: 0.35, ease: "power1.out" }, 0.5)
+        .to(ui, { pointerEvents: 'auto', duration: 0 }, 0.5);
     }
 
-    window.toggleFlap = function() {
-        if (state.isAnimating) return; state.isAnimating = true;
-        const isPortraitMode = window.innerWidth < window.innerHeight;
-        let targetZ = isPortraitMode ? 9.5 : 4.5;
-        let targetY = isPortraitMode ? 1.5 : 3.2;
-        let focusY = isPortraitMode ? 2.5 : 3.2;
+    document.getElementById('btn-start').addEventListener('click', startGame);
 
-        const tl = gsap.timeline({ onComplete: () => { state.isAnimating = false; } });
-        if (!state.isOpen) {
-            controls.enabled = false; document.getElementById('btn-action').innerText = "Fechar Rifa";
-            tl.to(camera.position, { x: 0, y: targetY, z: targetZ, duration: 1.2, ease: "power2.inOut" }, 0);
-            tl.to(controls.target, { x: 0, y: focusY, z: 0, duration: 1.2, ease: "power2.inOut" }, 0);
-            tl.to(flapPivot.rotation, { x: -2.3, duration: 1.0, ease: "back.out(1.2)" }, 0.4);
-        } else {
-            document.getElementById('btn-action').innerText = "Abrir Rifa";
-            const returnZ = isPortraitMode ? 11.5 : 11.0;
-            tl.to(camera.position, { x: 0, y: 1.0, z: returnZ, duration: 1.0, ease: "power2.inOut" }, 0);
-            tl.to(controls.target, { x: 0, y: 0, z: 0, duration: 1.0, ease: "power2.inOut", onComplete: () => { controls.enabled = true; } }, 0);
-            tl.to(flapPivot.rotation, { x: 0, duration: 0.7 }, 0);
-        }
-        state.isOpen = !state.isOpen;
-    }
+    document.getElementById('btn-options').addEventListener('click', () => {
+      if (!state.isModalOpen) toggleModal();
+    });
 
+    // Init
     processNames();
 
     const startZ = (window.innerWidth < window.innerHeight) ? 11.5 : 11.0;
@@ -342,21 +676,23 @@
     controls.update();
 
     function animate() {
-        requestAnimationFrame(animate);
-        controls.update();
-        if(!state.isOpen && !state.isAnimating) {
-            raffleGroup.rotation.y = Math.sin(Date.now() * 0.001) * 0.06;
-        }
-        renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+      controls.update();
+
+      if (!state.isOpen && !state.isAnimating) {
+        raffleGroup.rotation.y = Math.sin(Date.now() * 0.001) * 0.06;
+      }
+
+      renderer.render(scene, camera);
     }
     animate();
 
     window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
     });
-</script>
+  </script>
 </body>
 </html>
 
